@@ -1,0 +1,9 @@
+# Python Related
+__pycache__/
+*.py[cod]
+
+
+
+*.log
+*~
+db.sqlite3

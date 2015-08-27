@@ -1,37 +1,52 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+
+from .models import Book
+from .forms import NewBookForm
 # Create your views here.
 
 
 def index(request): # Home Page?
     return HttpResponse("Welcome to the Library!")
 
-# So, for books, we require the following pages:
-#   Add a book (admin/lib)
-def add_book(request):
-    return HttpResponse("Adding new book to the Library!")
-#   Delete a book (admin/lib)
-def delete_book(request, book_id):
+
+def add_book(request):  # (Admin/lib only)
+    if request.method == 'POST':
+        form = NewBookForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/library/books') # Try to decouple this
+    else:
+        form = NewBookForm()
+    return render(request, 'library/newbook.html', {'form': form})
+        
+def delete_book(request, book_id):  # (Admin/lib only)
     return HttpResponse("Deleting book {0} from the Library!".format(book_id))
-#   View book details
+
 def show_book_details(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    return render(request, 'library/bookDetail.html', {'book': book})    
     return HttpResponse("Listing details for book {0}".format(book_id))
-#   Edit book details (admin/lib)
-def edit_book(request, book_id):
+
+def edit_book(request, book_id):  # Admin/lib only)
     return HttpResponse("Editing details for book {0}".format(book_id))
-#   Search for a book
+
 def search_for_book(request): # Don't know how we will handle this yet...
     return HttpResponse("Lost, lost, lost")
-#   List Books (search without criteria?)
+
 def list_books(request):
-    return HttpResponse("Here is a list of our books:")
+    # We may want to paginate this...
+    all_books = Book.objects.all()
+    context = {'all_books': all_books}
+    return render(request, 'library/listAllBooks.html', context)
+
 
 
 
 # For transactions we need to:
-# 1. Checkout books (auth)
+# 1. Checkout books (auth) (librarian as a proxy only)
 # 2. Reserve Books (auth)
 #   The librarian should also be able to serve as a proxy for others
 
-# 3. View transactions (Librarian should be able to view all, and dump to file
+# 3. View transactions (Librarian should be able to view all, and dump to file)

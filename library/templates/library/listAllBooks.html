@@ -1,0 +1,14 @@
+<h1>All Books:</h1>
+
+{% if all_books %}
+
+<table>
+  <tr><th>Title</th><th>Author</th><th>DDN</th></tr>
+
+{% for book in all_books %}
+  <tr><td>{{ book.title }}</td><td>{{ book.author }}</td>
+    <td>{{ book.ddn }}</td><td><a href="/library/books/{{book.id}}/detail">{{ book.id }}</a></td></tr>
+{% endfor %}
+</table>
+
+{% endif %}

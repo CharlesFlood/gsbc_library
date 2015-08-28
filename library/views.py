@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 
 from .models import Book
-from .forms import NewBookForm
+from .forms import BookForm
 # Create your views here.
 
 
@@ -13,24 +13,33 @@ def index(request): # Home Page?
 
 def add_book(request):  # (Admin/lib only)
     if request.method == 'POST':
-        form = NewBookForm(request.POST)
+        form = BookForm(request.POST)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect('/library/books') # Try to decouple this
     else:
-        form = NewBookForm()
+        form = BookForm()
     return render(request, 'library/newbook.html', {'form': form})
         
 def delete_book(request, book_id):  # (Admin/lib only)
-    return HttpResponse("Deleting book {0} from the Library!".format(book_id))
+    book = get_object_or_404(Book, pk=book_id)
+    book.delete()
+    return HttpResponseRedirect('/library/books') # Decouple this as well
 
 def show_book_details(request, book_id):
     book = get_object_or_404(Book, pk=book_id)
     return render(request, 'library/bookDetail.html', {'book': book})    
-    return HttpResponse("Listing details for book {0}".format(book_id))
 
 def edit_book(request, book_id):  # Admin/lib only)
-    return HttpResponse("Editing details for book {0}".format(book_id))
+    if request.method == 'POST':
+        book = get_object_or_404(Book, pk=book_id)
+        form = BookForm(request.POST, instance=book)
+        form.save()
+        return HttpResponseRedirect('/library/books') # Decouple this as well
+    else:
+        book = get_object_or_404(Book, pk=book_id)
+        form = BookForm(instance=book)
+        return render(request, 'library/editbook.html', {'form': form, 'book_id': book_id})
 
 def search_for_book(request): # Don't know how we will handle this yet...
     return HttpResponse("Lost, lost, lost")
